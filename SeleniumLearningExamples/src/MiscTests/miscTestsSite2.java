@@ -21,7 +21,7 @@ public class miscTestsSite2 {
 		System.setProperty("webdriver.gecko.driver", ".//drivers/geckodriver.exe");
 		driver = new FirefoxDriver();
 		driver.get(URL);
-		assertEquals(driver.getCurrentUrl(), URL);
+		assertEquals(URL, driver.getCurrentUrl());
 		driver.close();
 
 	}
@@ -33,7 +33,7 @@ public class miscTestsSite2 {
 		driver = new FirefoxDriver();
 		driver.get(URL);
 		driver.findElement(By.xpath("//a[contains(text(),'Add/Remove Elements')]")).click();
-		assertEquals(driver.getCurrentUrl(), "http://the-internet.herokuapp.com/add_remove_elements/");
+		assertEquals("http://the-internet.herokuapp.com/add_remove_elements/", driver.getCurrentUrl());
 		driver.close();
 
 	}
@@ -53,7 +53,7 @@ public class miscTestsSite2 {
 		 * the element should be added, and there should only be that one element, so
 		 * the find elements function should return us a list with only one element
 		 */
-		assertEquals(list.size(), 1);
+		assertEquals(1, list.size());
 		driver.close();
 	}
 
@@ -73,7 +73,7 @@ public class miscTestsSite2 {
 		 * two elements should have been added, so the list should have a size of 2 to
 		 * imply that both elements were added.
 		 */
-		assertEquals(list.size(), 2);
+		assertEquals(2, list.size());
 		driver.close();
 	}
 
@@ -98,7 +98,7 @@ public class miscTestsSite2 {
 		 * elements should be empty, therefore it's size == 0 implies that the element
 		 * was removed
 		 */
-		assertEquals(list.size(), 0);
+		assertEquals(0, list.size());
 		driver.close();
 	}
 
@@ -126,7 +126,7 @@ public class miscTestsSite2 {
 		 * elements again it should only have a size of 1 now, implying that 1 element
 		 * was removed and the other stayed
 		 */
-		assertEquals(list.size(), 1);
+		assertEquals(1, list.size());
 		driver.close();
 	}
 
@@ -151,7 +151,71 @@ public class miscTestsSite2 {
 		 * both elements should have been removed to the list resulting from searching
 		 * for them should be empty
 		 */
-		assertEquals(list.size(), 0);
+		assertEquals(0, list.size());
 		driver.close();
+	}
+
+	/**
+	 * checks that basic authorization is successful, it does this by passing the
+	 * username and password in the url
+	 */
+	@Test
+	public void herokuappTest_BasicAuthSuccess() {
+		System.setProperty("webdriver.gecko.driver", ".//drivers/geckodriver.exe");
+		driver = new FirefoxDriver();
+		// passes username and password at start of url to pass the basic auth pop up
+		driver.get("http://admin:admin@the-internet.herokuapp.com/basic_auth");
+		String screenText = driver.findElement(By.className("example")).getText();
+		String expected = "Basic Auth\n" + "Congratulations! You must have the proper credentials.";
+		assertEquals(expected, screenText);
+		driver.close();
+	}
+
+	/**
+	 * checks if any of the images on the page are broken. this current test should
+	 * fail as the page intentionally broken images
+	 */
+	@Test
+	public void herokuappTest_BrokenImages_BrokenImagePage() {
+		System.setProperty("webdriver.gecko.driver", ".//drivers/geckodriver.exe");
+		driver = new FirefoxDriver();
+		driver.get("http://the-internet.herokuapp.com/broken_images");
+		List<WebElement> images = driver.findElements(By.tagName("img"));
+		for (WebElement image : images) {
+			// checks for each image whether it is broken
+			assertEquals(false, isImageBroken(image));
+		}
+		// expect this to fail as the site intentionally has broken images
+		driver.close();
+	}
+
+	/**
+	 * checks that the image that should load correctly, loads correctly, whereas
+	 * the other 2 images on the page are broken
+	 */
+	@Test
+	public void herokuappTest_ImageBroken_brokenImagePage() {
+		System.setProperty("webdriver.gecko.driver", ".//drivers/geckodriver.exe");
+		driver = new FirefoxDriver();
+		driver.get("http://the-internet.herokuapp.com/broken_images");
+		WebElement image = driver.findElement(By.xpath("//body//img[3]"));
+		// the list of images should be 0 if none of the images are broken.
+		assertEquals(false, isImageBroken(image));
+		// expect this to fail as the site intentionally has broken images
+		driver.close();
+	}
+
+	/**
+	 * checks if an element is broken or not
+	 * 
+	 * @param image,
+	 *            WebElement that we are checking is broken
+	 * @return true when image is broken
+	 */
+	public boolean isImageBroken(WebElement image) {
+		if (image.getAttribute("naturalWidth").equals("0")) {
+			return true;
+		}
+		return false;
 	}
 }
